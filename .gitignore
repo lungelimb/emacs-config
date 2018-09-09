@@ -4,12 +4,16 @@
 # Don't ignore this file
 !.gitignore
 
+# Don't ignore README
+!README.org
+
 # Don't ignore Emacs config and boostrapper
 !config.org
 !init.el
 
 # Don't ignore local MELPA packages
 !elpa
+elpa/.DS_Store
 
 # Don't ignore packages built from git via straight.el
 !straight

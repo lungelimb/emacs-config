@@ -1,14 +1,16 @@
 * Configuration structure
-+ ~init.el~ :: basically a bootstrapper; it parses through all elisp sorce code blocks in ~config.org~ then [[http://www.holgerschurig.de/en/emacs-efficiently-untangling-elisp/][efficiently]] tangles it to ~config.el~ (actual config used by Emacs) and byte-compiles it.
-+ ~config.org~ :: literal Emacs config; both docs and source code powered by =org-mode=
-+ ~/elpa~ directory :: local ELPA and MELPA repos copy. The purpose of adding all those packages is twofold: ensure that ~git pull~ of this repo provides 100% working as intended Emacs instance and give an option to fall-back specified packages in case update breaks something or MELPA is unavailable (it is The Internet after all)
-+ ~/straight~ directory :: same purpose as ~/elpa~
++ ~init.el~ :: basically a bootstrapper; it parses through all elisp sorce code blocks in ~config.org~ then [[http://www.holgerschurig.de/en/emacs-efficiently-untangling-elisp/][efficiently]] untangles it to ~config.el~ (actual config loaded by Emacs) and byte-compiles it to speed-up loading time.
++ ~config.org~ :: [[https://en.wikipedia.org/wiki/Literate_programming][literal]] Emacs config; both docs and source code powered by mighty =org-mode=.
++ ~/elpa~ directory :: ~ELPA~ and ~MELPA~ local repos copy. The purpose of adding all those packages is twofold:
+*** ensure that ~git pull~ of this repo provides 100% working out-of-box Emacs instance
+*** give an option to fall-back  in case some package update suddenly breaks something or if MELPA is unavailable (this is The Internet after all, everything can go down for awhile)
++ ~/straight~ directory :: serves the very same purpose as ~/elpa~ but for packages that are not available on ~MELPA~ but are loaded instead from repos here on ~GitHub~.
 
 * TODO Caveats
-+ ~DISABLED~ TODO-state in headings of this file :: basically works as ~:tangle no~, meaning all source code blocks in ~DISABLED~ heading won't be added to ~config.el~ config. Currently is not recursive. Yet.
++ ~DISABLED~ TODO-state in headings of ~config.org~ :: basically works as ~:tangle no~, meaning all source code blocks within ~DISABLED~ heading won't be added (untangled) to ~config.el~ config which is loaded by Emacs itself. Currently recursive ~DISABLE~ -ing is not supported. Yet.
 
-+ If there's any issue with network or certs (fetching packages via MEPLA, etc) :: try disabling [[*gnutls sane defaults][gnutls sane defaults]] since by default Emacs doesn't verifies if connection is secure. At all.
-+ Using ~LibreSSL~ instead of ~gnutls~ requires it to be installed system-wide :: to read more or to disable such behaviour proceed to [[*Use ~LibreSSL~ instead of ~gnutls~][corresponding section]].
++ If there's any issue with network or certs (fetching packages via ~MEPLA~, etc) :: try disabling [[file:config.org::*gnutls sane defaults][gnutls sane defaults]] since by default Emacs doesn't verifies if connection is secure. At all.
++ Using ~LibreSSL~ instead of ~gnutls~ requires it to be installed system-wide :: to read more or to disable such behaviour proceed to [[file:config.org::*Use ~LibreSSL~ instead of ~gnutls~][corresponding section]].
 + Store private settings in ~private.el~ :: of course you have to create it by yourself in ~${HOME}/.emacs.d/~ directory. That allows safe sharing of this configuration.
 
 ** MacOS-specific
