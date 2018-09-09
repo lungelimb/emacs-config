@@ -1,0 +1,15 @@
+# Ignore all by default
+/*
+
+# Don't ignore this file
+!.gitignore
+
+# Don't ignore Emacs config and boostrapper
+!config.org
+!init.el
+
+# Don't ignore local MELPA packages
+!elpa
+
+# Don't ignore packages built from git via straight.el
+!straight
