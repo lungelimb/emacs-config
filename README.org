@@ -1,0 +1,18 @@
+* Configuration structure
++ ~init.el~ :: basically a bootstrapper; it parses through all elisp sorce code blocks in ~config.org~ then [[http://www.holgerschurig.de/en/emacs-efficiently-untangling-elisp/][efficiently]] tangles it to ~config.el~ (actual config used by Emacs) and byte-compiles it.
++ ~config.org~ :: literal Emacs config; both docs and source code powered by =org-mode=
++ ~/elpa~ directory :: local ELPA and MELPA repos copy. The purpose of adding all those packages is twofold: ensure that ~git pull~ of this repo provides 100% working as intended Emacs instance and give an option to fall-back specified packages in case update breaks something or MELPA is unavailable (it is The Internet after all)
++ ~/straight~ directory :: same purpose as ~/elpa~
+
+* TODO Caveats
++ ~DISABLED~ TODO-state in headings of this file :: basically works as ~:tangle no~, meaning all source code blocks in ~DISABLED~ heading won't be added to ~config.el~ config. Currently is not recursive. Yet.
+
++ If there's any issue with network or certs (fetching packages via MEPLA, etc) :: try disabling [[*gnutls sane defaults][gnutls sane defaults]] since by default Emacs doesn't verifies if connection is secure. At all.
++ Using ~LibreSSL~ instead of ~gnutls~ requires it to be installed system-wide :: to read more or to disable such behaviour proceed to [[*Use ~LibreSSL~ instead of ~gnutls~][corresponding section]].
++ Store private settings in ~private.el~ :: of course you have to create it by yourself in ~${HOME}/.emacs.d/~ directory. That allows safe sharing of this configuration.
+
+** MacOS-specific
++ Deleting files to Trash Bin on MacOS :: requires ~trash~ cli-util to be installed via ~homebrew~: ~brew install trash~.
++ ~iTerm zshell integration~ :: screws up ~ansi-term~ prompt. More info [[https://www.reddit.com/r/emacs/comments/5p3njk/help_terminal_zsh_control_characters_in_prompt/dco7yud/][here]] on reddit. For now just do ~rm ~/.iterm2_shell_integration.zsh~.
+
+
