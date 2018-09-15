@@ -1235,7 +1235,7 @@ This could be in ~xah-fly-keys~ ~use-package~ declaration instead, but for now i
     :hook	(magit-status-mode . xah-fly-insert-mode-activate))
 #+END_SRC
 
-*** Ryo-modal
+*** DISABLED Ryo-modal
 Create your own modal mode.
 #+BEGIN_SRC emacs-lisp
   (use-package ryo-modal
@@ -1275,11 +1275,13 @@ Create your own modal mode.
             (re-search-forward "\n[\t\n ]*\n+" nil "move" ))
         (end-of-line)))
 
-  
     :config
     (ryo-modal-keys
      ("," ryo-modal-repeat)
      ("f" ryo-modal-mode)
+
+     ("a" execute-extended-command)
+     ("s" open-line)
 
      ("g" xah-beginning-of-line-or-block)
      ("h" backward-char)
@@ -2041,7 +2043,9 @@ Turning off ~ibuffer-show-empty-filter-groups~ is particularly useful, because t
   (mapc 'kill-buffer (buffer-list)))
 #+END_SRC
 
-*** Switch windows / buffer panes
+*** TODO Switch windows / buffer panes
+FIXME: minibuffer w/ <3 panes open does not count as buffer so there's no letter to prompt.
+
 Unobstructive alternative to ace-window. It doesn't shows up if you have only two windows (as you switch between then using C-x o), but assignes a letter to every window if there's <3 panes open, which can be pressed to select specific window. Shamelessly stolen from Uncle Dave's [[https://github.com/daedreth/UncleDavesEmacs#switch-window][config]]:
 #+BEGIN_SRC emacs-lisp
 (use-package switch-window
@@ -2413,19 +2417,71 @@ npm install -g indium
 #+END_SRC
 
 ** Python
-*** python package
+*** Python mode
       #+BEGIN_SRC emacs-lisp
-      (use-package python
-        :defer t
-        :mode (("\\.py\\'" . python-mode)
-              ("\\.ipy\\'" . python-mode))
-        :init
-        (setq-default python-indent-offset 4))
+        (use-package python
+          :defer t
+          :mode (("\\.py\\'" . python-mode)
+                 ("\\.ipy\\'" . python-mode))
+          :interpreter ("python" . python-mode)
+                                                ;:hook (python-mode . highlight-numbers-mode)
+          :init
+          (setenv "PYTHONIOENCODING" "utf-8")
+          (setq-default python-indent-offset 4
+                        python-indent-guess-indent-offset nil))
       #+END_SRC
 
-*** company-jedi
-**** Auto-completion backend:
-      At first run execute =M-x= ~jedi:install-server~
+Supress the warning "python.el: native completion setup failed"
+#+BEGIN_SRC emacs-lisp
+  (setq warning-suppress-types '((python)
+                                 (emacs)))
+#+END_SRC
+
+Check if native competion is available:
+#+BEGIN_SRC emacs-lisp
+   (defun python-shell-completion-native-try ()
+      "Return non-nil if can trigger native completion."
+      (let ((python-shell-completion-native-enable t)
+            (python-shell-completion-native-output-timeout
+             python-shell-completion-native-try-output-timeout))
+        (python-shell-completion-native-get-completions
+         (get-buffer-process (current-buffer))
+         nil "_")))
+#+END_SRC
+
+*** [[https://elpy.readthedocs.io/en/latest/ide.html#interpreter-setup][Setup =python= interpreter]]:
+**** DISABLED Jupyter as interpreter
+Disable completion at all:
+#+BEGIN_SRC emacs-lisp
+(setq python-shell-completion-native-enable nil)
+#+END_SRC
+
+Use jupyter already!
+#+BEGIN_SRC emacs-lisp
+(setq python-shell-interpreter "jupyter"
+  python-shell-interpreter-args "console --simple-prompt"
+  python-shell-prompt-detect-failure-warning nil)
+  ;(add-to-list 'python-shell-completion-native-disabled-interpreters
+  ;  "jupyter")
+  #+END_SRC
+
+**** IPython as interpreter
+     #+BEGIN_SRC emacs-lisp
+       (when (executable-find "ipython")
+         (setq python-shell-interpreter "ipython"
+               python-shell-interpreter-args "-i --simple-prompt --no-color-info"
+               python-shell-prompt-regexp "In \\[[0-9]+\\]: "
+               python-shell-prompt-block-regexp "\\.\\.\\.\\.: "
+               python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
+               python-shell-completion-setup-code
+               "from IPython.core.completerlib import module_completion"
+               python-shell-completion-string-code
+               "';'.join(get_ipython().Completer.all_completions('''%s'''))\n"))
+     #+END_SRC
+
+*** TODO Python autocompletion and code navigation
+**** DISABLED Jedi backend for ~company~
+At first run execute =M-x= ~jedi:install-server~
       #+BEGIN_SRC emacs-lisp
       (defun python-mode-company-init ()
       (setq-local company-backends '((company-jedi
@@ -2439,40 +2495,112 @@ npm install -g indium
         :hook (python-mode . python-mode-company-init))
       #+END_SRC
 
-*** flycheck
+**** Anaconda mode and backend for ~company~
+~anaconda-mode~ provides the following features:
+- context-sensitive code completion
+- jump to definitions
+- find references
+- view documentation
+- virtual environment
+- ~eldoc-mode~
+- all this stuff inside ~vagrant~, ~docker~ and remote hosts
+
+
+#+BEGIN_SRC emacs-lisp
+  (use-package anaconda-mode
+    :after python
+    :init
+    (setq anaconda-mode-eldoc-as-single-line t)
+    (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+    (add-hook 'python-mode-hook 'anaconda-mode))
+
+  (use-package company-anaconda
+    :after anaconda-mode
+    :config
+    (setq jedi:complete-on-dot t)
+    (setq company-minimum-prefix-length 1)
+    (add-to-list 'company-backends 'company-anaconda))
+#+END_SRC
+
+Use company-childframe (posframe):
+#+BEGIN_SRC emacs-lisp :tangle no
+  (use-package company-childframe
+    :after company
+    :config
+    (company-childframe-mode 1)
+  
+    ;; let desktop.el not record the company-childframe-mode
+    (require 'desktop) ;this line is needed.
+    (push '(company-childframe-mode . nil)
+          desktop-minor-mode-table))
+#+END_SRC
+
+*** Python syntax check
 #+BEGIN_SRC emacs-lisp
 (use-package flycheck
   :hook (python-mode . flycheck-mode))
 #+END_SRC
 
-*** elpy
-IDE package.
+*** Python debugger ~ipdb~
+IPython debugger.
+If you call ~ipdb~, the execution will stop and give a nice ipython-looking prompt. Just add the line:
+#+BEGIN_SRC python
+   import ipdb; ipdb.set_trace()
+#+END_SRC
+Now you can use the usual commands:
+- =c= :: to continue the execution
+- =n= :: to execute the next one
+- =s= :: to step into the next function call
+- =l= :: to list the source code
+- =!= :: to execute a statement in the current context, etc.
+
+Snippet for breakpoint:
+#+BEGIN_SRC emacs-lisp
+(defun python-add-breakpoint ()
+  "Add a break point"
+  (interactive)
+  (newline-and-indent)
+  (insert "import ipdb; ipdb.set_trace()")
+  (highlight-lines-matching-regexp "^[ ]*import ipdb; ipdb.set_trace()"))
+#+END_SRC
+
+You can use the following to highlight this line, and not forget it:
+#+BEGIN_SRC emacs-lisp
+(defun annotate-pdb ()
+  (interactive)
+  (highlight-lines-matching-regexp "import ipdb")
+  (highlight-lines-matching-regexp "ipdb.set_trace()"))
+(add-hook 'python-mode-hook 'annotate-pdb)
+#+END_SRC
+
+And to delete every breakpoint in the buffer:
+#+BEGIN_SRC emacs-lisp
+(defun ipdb-cleanup ()
+    (interactive)
+    (save-excursion
+      (replace-match ".*ipdb.set_trace().*\n" "" nil (point-min) (point-max))
+      ;; (save-buffer)
+      ))
+#+END_SRC
+
+*** TODO RealGud debugger frontend
+*** TODO Yapfify formatting
+*** TODO flycheck-mypy for python 3.5 hints
+*** TODO ~pippel~ pip frontend
+*** TODO ~ipy~ ide package
+*** DISABLED IDE meta-package ~elpy~
+
 [[https://realpython.com/emacs-the-best-python-editor/][setted up via this guide]]
 
 [[https://elpy.readthedocs.io/en/latest/index.html][Docs here]]
 
-**** Reccomended install (dependencies) via [[https://www.anaconda.com/download/][Anaconda]].
-else
-**** Pre-req for elpy
-via pip:
-     #+BEGIN_SRC bash
-       # Either of these
-       pip install rope
-       pip install jedi
-       # flake8 for code checks
-       pip install flake8
-       # and autopep8 for automatic PEP8 formatting
-       pip install autopep8
-       # and yapf for code formatting
-       pip install yapf
-     #+END_SRC
-
-     One-liner for it:
+Pre-req for elpy via ~pip~.
+One-liner for it:
      #+BEGIN_SRC shell
      pip install jedi flake8 autopep8 yapf
      #+END_SRC
 
-**** Install
+~elpy~ is better for running code and refactoring while ~anaconda-mode~ is better for jumping to definitions and docs.
      #+BEGIN_SRC emacs-lisp
        (use-package elpy
          :after python
@@ -2492,32 +2620,85 @@ via pip:
                        (define-key elpy-mode-map (kbd "C-<tab>") 'company-complete))))
      #+END_SRC
 
-**** [[https://elpy.readthedocs.io/en/latest/ide.html#interpreter-setup][Setup =python= interpreter]]:
-***** Jupyter as interpreter
-Disable completion at all:
+Eshell support
 #+BEGIN_SRC emacs-lisp
-(setq python-shell-completion-native-enable nil)
+It would seem that there is a missing eshell-modify-global-environment for pyvenv to work. The following works for me:
+
+(setq eshell-modify-global-environment t)
+(defun smf/post-venv-hook ()
+  (setq eshell-path-env (mapconcat 'identity exec-path ":")))
+
+(add-hook 'pyvenv-post-activate-hooks #'smf/post-venv-hook)
+(add-hook 'pyvenv-post-deactivate-hooks #'smf/post-venv-hook)
 #+END_SRC
 
-Use jupyter already!
-#+BEGIN_SRC emacs-lisp
-(setq python-shell-interpreter "jupyter"
-  python-shell-interpreter-args "console --simple-prompt"
-  python-shell-prompt-detect-failure-warning nil)
-  ;(add-to-list 'python-shell-completion-native-disabled-interpreters
-  ;  "jupyter")
-  #+END_SRC
+*** PEP8 compliance
+Requires ~autopep8~ to be installed:
+#+BEGIN_SRC shell
+pip install autopep8
+#+END_SRC
 
-***** DISABLED IPython as interpreter
-     #+BEGIN_SRC emacs-lisp
-     (setq python-shell-interpreter "ipython"
-       python-shell-interpreter-args "-i --simple-prompt")
-     #+END_SRC
-
-**** PEP8 compliance:
+Auto format on save:
 #+BEGIN_SRC emacs-lisp
 (use-package py-autopep8
   :hook (elpy-mode-hook .  py-autopep8-enable-on-save))
+#+END_SRC
+
+*** TODO ~virtualenv~ wrapper
+SET ENV_VAR!
+#+BEGIN_SRC sh
+export WORKON_HOME=~/virtualenvs
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+  (use-package virtualenvwrapper
+    :config
+    (venv-initialize-interactive-shells) ;; if you want interactive shell support
+    (setq eshell-modify-global-environment t)
+    (venv-initialize-eshell) ;; if you want eshell support
+    ;; note that setting `venv-location` is not necessary if you
+    ;; use the default location (`~/.virtualenvs`), or if the
+    ;; the environment variable `WORKON_HOME` points to the right place
+                                          ;(setq venv-location "~/cpu2mjpeg")
+    )
+#+END_SRC
+
+Projectile support:
+#+BEGIN_SRC emacs-lisp
+  (use-package projectile
+    :init
+    (setq projectile-switch-project-action
+          '(lambda ()
+             (venv-projectile-auto-workon)
+             (projectile-find-file)))
+    (setq venv-dirlookup-names '(".venv" "pyenv" ".virtual" ".virtualenvs")))
+#+END_SRC
+
+Eshell custom prompt
+TODO: adjust ~eshell-prompt-regexp~:
+#+BEGIN_SRC emacs-lisp
+(setq eshell-prompt-function
+    (lambda ()
+      (concat venv-current-name " $ ")))
+#+END_SRC
+
+*** Git gutter for Python
+#+BEGIN_SRC emacs-lisp
+  (use-package git-gutter-fringe
+    :hook (python-mode . git-gutter-mode))
+#+END_SRC
+
+*** TODO Highlight numbers and operators
+#+BEGIN_SRC emacs-lisp
+  (use-package highlight-numbers
+    :diminish highlight-numbers-mode
+    :commands highlight-numbers-mode
+    :init (add-hook 'python-mode-hook 'highlight-numbers-mode))
+
+  (use-package highlight-operators
+    :diminish highlight-operators-mode
+    :commands highlight-operators-mode
+    :init (add-hook 'python-mode-hook 'highlight-operators-mode))
 #+END_SRC
 
 *** Jupyter Notebook
@@ -2641,6 +2822,18 @@ Not sure what it is exactly.
 *** Don't split src buffer
 #+BEGIN_SRC emacs-lisp
 (setq org-src-window-setup 'current-window)
+#+END_SRC
+
+*** Allow src execution from babel
+#+BEGIN_SRC emacs-lisp
+  (load-library "ob-shell")
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '(
+     ;(sh . t)
+     (shell . t)
+     (python . t)
+     ))
 #+END_SRC
 
 *** TODO SRC code block local variables
@@ -2829,6 +3022,11 @@ Hitting TAB after an =<el= in org-mode file will create a template for elisp ins
 **** Allow export with broken links
 #+BEGIN_SRC emacs-lisp
 (setq org-export-with-broken-links t)
+#+END_SRC
+
+**** Asynchronous execution
+#+BEGIN_SRC emacs-lisp
+(use-package ob-async)
 #+END_SRC
 
 **** DISABLED Pandoc
@@ -3029,11 +3227,12 @@ Undo\redo:
 #+END_SRC
 
 Move lines:
+Arrow-keys disabled since they conflict with moving heading in org.
 #+BEGIN_SRC emacs-lisp
   (define-key custom-bindings-map (kbd "M-p") 'move-lines-up)
-  (define-key custom-bindings-map (kbd "M-<up>") 'move-lines-up)
+  ;(define-key custom-bindings-map (kbd "M-<up>") 'move-lines-up)
   (define-key custom-bindings-map (kbd "M-n") 'move-lines-down)
-  (define-key custom-bindings-map (kbd "M-<down>") 'move-lines-down)
+  ;(define-key custom-bindings-map (kbd "M-<down>") 'move-lines-down)
 #+END_SRC
 
 Custom functions:
