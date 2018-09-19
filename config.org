@@ -943,25 +943,34 @@ Turned off for a slight performance boost:
 #+END_SRC
 
 ** TODO Fontface
-*** Source Code Pro
-#+BEGIN_SRC emacs-lisp
-(set-face-attribute 'default nil
-                    :family "Source Code Pro" :height 160)
-;; VARIABLE PITCH UNTESTED!
-(set-face-attribute 'variable-pitch nil :family "Monaco")
-#+END_SRC
-
-*** DISABLED FiraCode
 Obtaining on MacOS:
 #+BEGIN_SRC shell
 brew tap caskroom/fonts
-brew cask install font-fira-code
+brew cask install font-fira-code font-iosevka
 #+END_SRC
 
-Using in Emacs:
+*** Fixed-width
+**** DISABLED DejaVu Sans Mono
 #+BEGIN_SRC emacs-lisp
 (set-face-attribute 'default nil
-                    :family "FiraCode" :height 160)
+                    :family "DejaVu Sans Mono" :height 160)
+#+END_SRC
+
+**** Source Code Pro
+#+BEGIN_SRC emacs-lisp
+(set-face-attribute 'default nil
+                    :family "Source Code Pro" :height 160)
+#+END_SRC
+
+*** Variable pitch
+**** DISABLED Monaco
+#+BEGIN_SRC emacs-lisp
+(set-face-attribute 'variable-pitch nil :family "Monaco")
+#+END_SRC
+
+**** Iosevka
+#+BEGIN_SRC emacs-lisp
+  (set-face-attribute 'variable-pitch nil :family "Iosevka")
 #+END_SRC
 
 ** TODO Sane defaults
@@ -978,16 +987,16 @@ Must append =-theme= to name in ~use-package~ declaration if it's not a meta-pac
 See [[https://github.com/jwiegley/use-package/issues/454][~use-package~ corresponding issue]].
 
 Appending ~NO_CONFIRM~ parameter as ~t~ to ~load-theme~ silences annoying promps such as "Loading a theme can run Lisp code. Really load? (y or n)"
-    #+BEGIN_EXAMPLE
+ #+BEGIN_EXAMPLE
 (load-theme 'theme-name t)
 #+END_EXAMPLE
 
 ORG BULLETS RELOAD!
 Advice for function ~load-theme~ to always disable currently enabled themes for full unload/load cycle:
 #+BEGIN_SRC emacs-lisp
-(defadvice load-theme
-    (before disable-before-load (theme &optional no-confirm no-enable) activate)
-  (mapc 'disable-theme custom-enabled-themes))
+  (defadvice load-theme
+      (before disable-before-load (theme &optional no-confirm no-enable) activate)
+    (mapc 'disable-theme custom-enabled-themes))
 #+END_SRC
 
 UNBOUND!
@@ -1010,6 +1019,30 @@ Use custom function to be able to cycle through themes:
   (use-package zenburn-theme
    :config
    (load-theme 'zenburn t))
+#+END_SRC
+
+*** Solarized
+#+BEGIN_SRC emacs-lisp
+(use-package solarized-theme
+  :config
+  (load-theme 'solarized-dark t))
+#+END_SRC
+
+Org fontify:
+#+BEGIN_SRC emacs-lisp
+(use-package solarized-theme
+  :init
+  (dolist (face '(org-block-begin-line 
+                  org-block-end-line 
+                  org-verbatim 
+                  org-block))
+    (set-face-attribute face nil :inherit 'fixed-pitch :background "#073642"))
+  
+  
+  (set-face-attribute 'org-block-begin-line nil
+                      :underline nil :box t)
+  (set-face-attribute 'org-block-end-line nil
+                      :overline nil :box t))
 #+END_SRC
 
 *** DISABLED Spacemacs
@@ -1066,7 +1099,7 @@ More fiddling with modeline etc might be required (not polished):
                           (if (> b 255) 255 b)))) scale)))
 #+END_SRC
 
-*** Doom-themes
+*** DISABLED Doom-themes
 #+CAPTION: Doom One theme
 [[file:https://raw.githubusercontent.com/hlissner/emacs-doom-themes/screenshots/doom-one.png]]
 
@@ -1080,6 +1113,13 @@ More fiddling with modeline etc might be required (not polished):
     (doom-themes-visual-bell-config)
     ;; Corrects (and improves) org-mode's native fontification.
     (doom-themes-org-config))
+#+END_SRC
+
+*** DISABLED Org-beautify-theme
+#+BEGIN_SRC emacs-lisp
+  (use-package org-beautify-theme
+    :config
+    (setq org-beautify-theme-use-box-hack nil))
 #+END_SRC
 
 * Feel
@@ -1474,7 +1514,6 @@ argument is given, the duplicated region will be commented out."
 
 *** Parens ()
 **** smartparens
-****** Configuration
 Enables strict mode by default.
 Unwrapped parenthesis cannot be added or deleted.
 #+BEGIN_SRC emacs-lisp
@@ -1486,57 +1525,6 @@ Unwrapped parenthesis cannot be added or deleted.
     :config
     (progn
       (show-smartparens-global-mode t)))
-#+END_SRC
-
-****** TODO Bindings
-#+BEGIN_SRC emacs-lisp
-(bind-keys
- :map smartparens-mode-map
- ("C-M-a" . sp-beginning-of-sexp)
- ("C-M-e" . sp-end-of-sexp)
-
- ("C-<down>" . sp-down-sexp)
- ("C-<up>"   . sp-up-sexp)
- ("M-<down>" . sp-backward-down-sexp)
- ("M-<up>"   . sp-backward-up-sexp)
-
- ("C-M-f" . sp-forward-sexp)
- ("C-M-b" . sp-backward-sexp)
-
- ("C-M-n" . sp-next-sexp)
- ("C-M-p" . sp-previous-sexp)
-
- ("C-S-f" . sp-forward-symbol)
- ("C-S-b" . sp-backward-symbol)
-
- ("C-<right>" . sp-forward-slurp-sexp)
- ("M-<right>" . sp-forward-barf-sexp)
- ("C-<left>"  . sp-backward-slurp-sexp)
- ("M-<left>"  . sp-backward-barf-sexp)
-
- ("C-M-t" . sp-transpose-sexp)
- ("C-M-k" . sp-kill-sexp)
- ("C-k"   . sp-kill-hybrid-sexp)
- ("M-k"   . sp-backward-kill-sexp)
- ("C-M-w" . sp-copy-sexp)
- ("C-M-d" . delete-sexp)
-
- ("M-<backspace>" . backward-kill-word)
- ("C-<backspace>" . sp-backward-kill-word)
- ([remap sp-backward-kill-word] . backward-kill-word)
-
- ("M-[" . sp-backward-unwrap-sexp)
- ("M-]" . sp-unwrap-sexp)
-
- ("C-x C-t" . sp-transpose-hybrid-sexp)
- ("C-c ("  . wrap-with-parens)
- ("C-c ["  . wrap-with-brackets)
- ("C-c {"  . wrap-with-braces)
- ;CONFLICTS WITH ORG SRC BLOCK QUIT!
- ;("C-c '"  . wrap-with-single-quotes)
- ("C-c \"" . wrap-with-double-quotes)
- ("C-c _"  . wrap-with-underscores)
- ("C-c `"  . wrap-with-back-quotes))
 #+END_SRC
 
 **** Auto-close brackets (Electric)
@@ -2749,10 +2737,10 @@ TODO: adjust ~eshell-prompt-regexp~:
 #+END_SRC
 
 ** Social
-*** Jabber
+*** DISABLED Jabber
 itself...
 
-Point.im client:
+Point.im client (use straight-use-package instead):
 #+BEGIN_SRC emacs-lisp
   (use-package point-im
     :ensure jabber
@@ -2819,12 +2807,20 @@ Not sure what it is exactly.
 (require 'org-mouse)
 #+END_SRC
 
-*** Don't split src buffer
+*** Source blocks
+**** Fontify source blocks
+#+BEGIN_SRC emacs-lisp
+  (setq org-src-fontify-natively t
+        org-src-preserve-indentation t
+        org-src-tab-acts-natively t)
+#+END_SRC
+
+**** Don't split src buffer
 #+BEGIN_SRC emacs-lisp
 (setq org-src-window-setup 'current-window)
 #+END_SRC
 
-*** Allow src execution from babel
+**** Allow execution from babel
 #+BEGIN_SRC emacs-lisp
   (load-library "ob-shell")
   (org-babel-do-load-languages
@@ -2836,14 +2832,22 @@ Not sure what it is exactly.
      ))
 #+END_SRC
 
-*** TODO SRC code block local variables
+**** TODO src local variables
 [[https://emacs.stackexchange.com/questions/38207/how-to-specify-buffer-local-variables-for-the-edit-buffer-of-org-source-blocks][StackExchange]]
 
-*** Fancier heading level dots
+*** Fancier heading level symbols
 #+BEGIN_SRC emacs-lisp
-(use-package org-bullets
+  (use-package org-bullets
     :hook (org-mode . org-bullets-mode)
-    :config (org-bullets-mode t))
+    :config
+    (setq org-bullets-bullet-list
+          '("♚" "♛ " "♜" "♝" "♞" "♟"))
+    (org-bullets-mode t))
+#+END_SRC
+
+*** Fontify headings
+#+BEGIN_SRC emacs-lisp
+(setq org-fontify-whole-heading-line t)
 #+END_SRC
 
 *** DISABLED Global indentation
@@ -3212,13 +3216,13 @@ Relies on ~zip~ program.
 * TODO Keybindings
 Store user-defined keybindings in minor mode to be able to enable/disable them in one fell swoop.
 
-Create ~custom-bindings-map~:
+** Create ~custom-bindings-map~:
 #+BEGIN_SRC emacs-lisp
   (defvar custom-bindings-map (make-keymap)
     "A keymap for custom bindings.")
 #+END_SRC
 
-Undo\redo:
+** Undo\Redo:
 #+BEGIN_SRC emacs-lisp
   (define-key custom-bindings-map (kbd "C-z") 'undo)
   (when (bound-and-true-p undo-tree-mode)
@@ -3226,7 +3230,7 @@ Undo\redo:
   (define-key custom-bindings-map (kbd "C-v") 'yank)
 #+END_SRC
 
-Move lines:
+** TODO Move lines:
 Arrow-keys disabled since they conflict with moving heading in org.
 #+BEGIN_SRC emacs-lisp
   (define-key custom-bindings-map (kbd "M-p") 'move-lines-up)
@@ -3235,7 +3239,58 @@ Arrow-keys disabled since they conflict with moving heading in org.
   ;(define-key custom-bindings-map (kbd "M-<down>") 'move-lines-down)
 #+END_SRC
 
-Custom functions:
+** TODO Smartparens bindings
+#+BEGIN_SRC emacs-lisp
+(bind-keys
+ :map smartparens-mode-map
+ ("C-M-a" . sp-beginning-of-sexp)
+ ("C-M-e" . sp-end-of-sexp)
+
+ ("C-<down>" . sp-down-sexp)
+ ("C-<up>"   . sp-up-sexp)
+ ("M-<down>" . sp-backward-down-sexp)
+ ("M-<up>"   . sp-backward-up-sexp)
+
+ ("C-M-f" . sp-forward-sexp)
+ ("C-M-b" . sp-backward-sexp)
+
+ ("C-M-n" . sp-next-sexp)
+ ("C-M-p" . sp-previous-sexp)
+
+ ("C-S-f" . sp-forward-symbol)
+ ("C-S-b" . sp-backward-symbol)
+
+ ("C-<right>" . sp-forward-slurp-sexp)
+ ("M-<right>" . sp-forward-barf-sexp)
+ ("C-<left>"  . sp-backward-slurp-sexp)
+ ("M-<left>"  . sp-backward-barf-sexp)
+
+ ("C-M-t" . sp-transpose-sexp)
+ ("C-M-k" . sp-kill-sexp)
+ ("C-k"   . sp-kill-hybrid-sexp)
+ ("M-k"   . sp-backward-kill-sexp)
+ ("C-M-w" . sp-copy-sexp)
+ ("C-M-d" . delete-sexp)
+
+ ("M-<backspace>" . backward-kill-word)
+ ("C-<backspace>" . sp-backward-kill-word)
+ ([remap sp-backward-kill-word] . backward-kill-word)
+
+ ("M-[" . sp-backward-unwrap-sexp)
+ ("M-]" . sp-unwrap-sexp)
+
+ ("C-x C-t" . sp-transpose-hybrid-sexp)
+ ("C-c ("  . wrap-with-parens)
+ ("C-c ["  . wrap-with-brackets)
+ ("C-c {"  . wrap-with-braces)
+ ;CONFLICTS WITH ORG SRC BLOCK QUIT!
+ ;("C-c '"  . wrap-with-single-quotes)
+ ("C-c \"" . wrap-with-double-quotes)
+ ("C-c _"  . wrap-with-underscores)
+ ("C-c `"  . wrap-with-back-quotes))
+#+END_SRC
+
+** TODO Custom functions:
 #+BEGIN_SRC emacs-lisp
   (define-key custom-bindings-map (kbd "C-c d") 'duplicate-thing)
   (define-key custom-bindings-map (kbd "C-x k") 'kill-current-buffer)
@@ -3252,17 +3307,17 @@ Custom functions:
   (define-key custom-bindings-map (kbd "<f5>") 'revert-buffer-no-confirm)
 #+END_SRC
 
-Term:
+** Term:
 #+BEGIN_SRC emacs-lisp
   (define-key custom-bindings-map (kbd "<s-return>") 'ansi-term)
 #+END_SRC
 
-Swap ~kill-emacs~ and ~expand-region~:
+** Swap ~kill-emacs~ and ~expand-region~:
 #+BEGIN_SRC emacs-lisp
  (define-key custom-bindings-map (kbd "C-q") 'save-buffers-kill-emacs)
 #+END_SRC
 
-Lastly, activate minor-mode:
+** Make minor-mode:
 #+BEGIN_SRC emacs-lisp
   (define-minor-mode custom-bindings-mode
     "A mode that activates custom-bindings."
