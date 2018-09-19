@@ -1,0 +1,6 @@
+[submodule "straight/repos/dash.el"]
+	path = straight/repos/dash.el
+	url = https://github.com/magnars/dash.el.git
+[submodule "straight/repos/org-now"]
+	path = straight/repos/org-now
+	url = https://github.com/alphapapa/org-now.git
