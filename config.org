@@ -741,6 +741,18 @@ Echo commands I haven’t finished quicker than the default of 1 second:
 #+END_SRC
 
 ** Buffer-specific
+*** DISABLED Timestamps in ~*Warnings*~ buffer
+#+BEGIN_SRC emacs-lisp
+(defun my-message-with-timestamp (old-func fmt-string &rest args)
+   "Prepend current timestamp (with microsecond precision) to a message"
+   (apply old-func
+          (concat (format-time-string "[%F %T.%3N %Z] ")
+                   fmt-string)
+          args))
+
+(advice-add 'message :around #'my-message-with-timestamp)
+#+END_SRC
+
 *** Highlight current line
 Omit in terminal:
 #+BEGIN_SRC emacs-lisp
@@ -787,6 +799,18 @@ Set ~show-paren-style~ to highlight:
 (setq show-paren-style 'parenthesis)
 (setq show-paren-delay 0)
 (show-paren-mode 1)
+#+END_SRC
+
+*** Show offscreen matching paren in minibuffer
+#+BEGIN_SRC emacs-lisp
+(defadvice show-paren-function (after my-echo-paren-matching-line activate)
+  "If a matching paren is off-screen, echo the matching line."
+  (when (and
+         (char-before (point))
+         (char-equal (char-syntax (char-before (point))) ?\)))
+    (let ((matching-text (blink-matching-open)))
+      (when matching-text
+        (message matching-text)))))
 #+END_SRC
 
 *** Spell checking
@@ -916,6 +940,20 @@ Temporarily highlights changes to the buffer associated with certain commands th
 #+BEGIN_SRC emacs-lisp
   (use-package volatile-highlights
     :config (volatile-highlights-mode t))
+#+END_SRC
+
+*** Highlight keywords annotations
+This code is not perfect, since it would highlight =FIXME:= everywhere in the source code (as opposed to only in comments as [[https://github.com/lewang/fic-mode/blob/master/fic-mode.el][~fic-mode~]] does), but it’s extremely highly unlikely that it’ll appear outside of the source comments anyways.
+#+BEGIN_SRC emacs-lisp
+(defun font-lock-comment-annotations ()
+  "Highlight a bunch of well known comment annotations.
+
+This functions should be added to the hooks of major modes for programming."
+  (font-lock-add-keywords
+   nil '(("\\<\\(FIX\\(ME\\)?\\|TODO\\|OPTIMIZE\\|HACK\\|REFACTOR\\):"
+          1 font-lock-warning-face t))))
+
+(add-hook 'prog-mode-hook 'font-lock-comment-annotations)
 #+END_SRC
 
 *** TODO Focus mode
@@ -1894,7 +1932,7 @@ But consider what GNU Emacs maintainer [[https://www.reddit.com/r/emacs/comments
 ~line-move-visual~ makes Emacs work harder in vertical motion and scrolling with long lines, because it needs to figure out where to put point after the vertical motion, and that requires going to the beginning of the long line, then coming back to the point whose horizontal coordinate is identical to the original position and whose vertical coordinate is one line above or below. This is expensive in long lines. When you disable ~line-move-visual~, Emacs just looks for the next/previous newline, then moves to the column of the original position, which is much faster, as it doesn't involve display layout calculations.
 #+END_QUOTE
 
-*** Autosave to ~/.emacs.d
+*** DISABLED Autosave to ~/.emacs.d
 To avoid file system clutter we put all auto saved files in a single directory:
 #+BEGIN_SRC emacs-lisp
 (defvar emacs-autosave-directory
@@ -1910,14 +1948,101 @@ To avoid file system clutter we put all auto saved files in a single directory:
       `((".*" ,emacs-autosave-directory t)))
 #+END_SRC
 
+*** Force backups
+Auto-save every 20 characters.
+If some catastrophe caused you to close Emacs or shut down your machine without saving the file then you can use =M-x= ~recover-file~ to recover the file from its auto-save:
+#+BEGIN_SRC emacs-lisp
+(setq auto-save-interval 20)
+#+END_SRC
+
+Add regexps and trashing them if needed from [[http://pragmaticemacs.com/emacs/auto-save-and-backup-every-save/][here]].
+
+Definition from [[https://stackoverflow.com/a/20824625][here]].
+Force buffer backups and make directories for them.
+Make two kinds of backups:
++ per-session backups :: once on the *first* save of the buffer in each Emacs session. These simulate Emacs default backup behavior.
++ per-save backups :: once on *every* save. Emacs does not do this by default, but it's very useful if you leave Emacs running for a long time.
+
+#+BEGIN_SRC emacs-lisp
+;; Default and per-save backups go here:
+(setq backup-directory-alist '(("" . "~/.emacs.d/backups/per-save")))
+
+(defun force-backup-of-buffer ()
+  ;; Make a special "per session" backup at the first save of each
+  ;; emacs session.
+  (when (not buffer-backed-up)
+    ;; Override the default parameters for per-session backups.
+    (let ((backup-directory-alist '(("" . "~/.emacs.d/backups/per-session")))
+          (kept-new-versions 3))
+      (backup-buffer)))
+  ;; Make a "per save" backup on each save.  The first save results in
+  ;; both a per-session and a per-save backup, to keep the numbering
+  ;; of per-save backups consistent.
+  (let ((buffer-backed-up nil))
+    (backup-buffer)))
+
+(add-hook 'before-save-hook  'force-backup-of-buffer)
+#+END_SRC
+
+Don't clobber symlinks and don't break multiple hardlinks:
+#+BEGIN_SRC emacs-lisp
+(setq backup-by-copying t
+      backup-by-copying-when-linked t)
+#+END_SRC
+
+Never auto-delete backups, so the ~backup-walker~ package is as useful as possible:
+#+BEGIN_SRC emacs-lisp
+(setq delete-old-versions -1)
+#+END_SRC
+
+Another option is specifying exact amount of kept backups:
+#+BEGIN_SRC emacs-lisp :tangle no
+(setq  kept-new-versions 10    ; keep 10 latest versions
+       kept-old-versions 0     ; don't bother with old versions
+       delete-old-versions t   ; don't ask about deleting old versions
+)
+#+END_SRC
+
+Use versioned backups:
+#+BEGIN_SRC emacs-lisp
+(setq version-control t)
+#+END_SRC
+
+Backup files even when using version control:
+#+BEGIN_SRC emacs-lisp
+(setq vc-make-backup-files t)
+#+END_SRC
+
+Turn off default ~vc-mode~:
+#+BEGIN_SRC emacs-lisp
+(setq vc-handled-backends nil)
+#+END_SRC
+
+Prone ~magit~ (???):
+#+BEGIN_SRC emacs-lisp :tangle no
+(setq magit-last-seen-setup-instructions "1.4.0")
+#+END_SRC
+
+Guess appropriate mode when saving a new file for the first time:
+#+BEGIN_SRC emacs-lisp
+(defun maybe-reset-major-mode ()
+  "Reset the buffer's major-mode if a different mode seems like a better fit.
+Mostly useful as a before-save-hook, to guess mode when saving a
+new file for the first time."
+  (when (and
+         ;; The buffer's visited file does not exist.
+         (eq (file-exists-p (buffer-file-name)) nil)
+         (eq major-mode 'fundamental-mode))
+    (normal-mode)))
+
+(add-hook 'before-save-hook 'maybe-reset-major-mode)
+#+END_SRC
+
 *** Automatically reload ~doc-view~
 Automatically revert ~doc-view~-buffers when the file changes on disk:
 #+BEGIN_SRC emacs-lisp
 (add-hook 'doc-view-mode-hook 'auto-revert-mode)
 #+END_SRC
-
-*** TODO backup-each-save
-[[https://www.emacswiki.org/emacs/backup-each-save.el]]
 
 *** Smoother scrolling
 Loads of information on [[https://www.emacswiki.org/emacs/SmoothScrolling][wiki]].
@@ -1952,6 +2077,17 @@ Loads of information on [[https://www.emacswiki.org/emacs/SmoothScrolling][wiki]
 This might render ~revert-buffer-no-confirm~ useless tho.
 #+BEGIN_SRC emacs-lisp
 (setq auto-revert-verbose nil)
+#+END_SRC
+
+*** Create parent directory
+If a directory doesn't exist on the way to a new file, create it.
+#+BEGIN_SRC emacs-lisp
+(defadvice find-file (before make-directory-maybe (filename &optional wildcards) activate)
+  "Create parent directory if not exists while visiting file."
+  (unless (file-exists-p filename)
+    (let ((dir (file-name-directory filename)))
+      (unless (file-exists-p dir)
+        (make-directory dir)))))
 #+END_SRC
 
 *** IBuffer
