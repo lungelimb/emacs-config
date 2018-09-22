@@ -4,3 +4,6 @@
 [submodule "straight/repos/org-now"]
 	path = straight/repos/org-now
 	url = https://github.com/alphapapa/org-now.git
+[submodule "backup-walker"]
+	path = straight/repos/backup-walker
+	url = https://github.com/lewang/backup-walker.git

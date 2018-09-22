@@ -1955,7 +1955,22 @@ If some catastrophe caused you to close Emacs or shut down your machine without 
 (setq auto-save-interval 20)
 #+END_SRC
 
-Add regexps and trashing them if needed from [[http://pragmaticemacs.com/emacs/auto-save-and-backup-every-save/][here]].
+TODO: Add regexps and trashing them if needed from [[http://pragmaticemacs.com/emacs/auto-save-and-backup-every-save/][here]].
+TODO: backups-dir to variable
+#+BEGIN_SRC emacs-lisp :tangle no
+(defvar emacs-autosave-directory
+  (concat user-emacs-directory "autosaves/")
+  "This variable dictates where to put auto saves. It is set to a
+  directory called autosaves located wherever your .emacs.d/ is
+  located.")
+
+(make-directory emacs-autosave-directory t)
+(setq backup-directory-alist
+;; Default and per-save backups go here:
+      `(("." . ,(concat emacs-autosave-directory "/per-save")))
+      auto-save-file-name-transforms
+      `((".*" ,(concat emacs-autosave-directory "\\1") t)))
+#+END_SRC
 
 Definition from [[https://stackoverflow.com/a/20824625][here]].
 Force buffer backups and make directories for them.
@@ -2036,6 +2051,22 @@ new file for the first time."
     (normal-mode)))
 
 (add-hook 'before-save-hook 'maybe-reset-major-mode)
+#+END_SRC
+
+*** Backup-walker
+#+BEGIN_QUOTE
+~backup-walker~ does not modify the Emacs backup system. It’s just a way to quickly traverse the backups you already have. And the emphasis is on traversing backups. There is never a listing of all the backups. (although if you’re interested, you can jump to the backup directory with dired-jump while traversing)
+#+END_QUOTE
+
+Use:
++ =M-x= ~backup-walker-start~ :: traverse backups
++ ~p~ :: previous backup
++ ~n~ :: next backup
+#+BEGIN_SRC emacs-lisp
+(straight-use-package
+ '(backup-walker :type git
+                 :host github
+                 :repo "lewang/backup-walker"))
 #+END_SRC
 
 *** Automatically reload ~doc-view~
