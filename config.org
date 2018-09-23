@@ -603,6 +603,18 @@ Custom neat bell func from [[http://disq.us/p/1n16s7d][here]]. Gets overrided if
 (setq line-number-display-limit-width 10000)
 #+END_SRC
 
+*** Which function
+More info [[https://emacs.stackexchange.com/a/28112][here]].
+#+BEGIN_SRC emacs-lisp
+(use-package which-func
+  :init
+  (add-hook 'org-src-mode-hook (lambda()(which-function-mode t)))
+  ;(add-to-list 'which-func-modes 'org-mode)
+  (setq which-func-unknown "∅")
+  :config
+  (which-function-mode t))
+#+END_SRC
+
 *** Cleaner modeline
 This package implements hiding or abbreviation of the mode line displays
 (lighters) of minor-modes. Supported by ~use-package~.
@@ -759,6 +771,16 @@ Omit in terminal:
 (when window-system (add-hook 'prog-mode-hook 'hl-line-mode))
 #+END_SRC
 
+#+BEGIN_QUOTE
+Lentic allows two buffers to share the same or similar content but otherwise operate independently. This can be used for several different purposes. Different buffers can be in the same mode, with different locations of point, even different text sizes -- in effect, providing multiple persistent views.
+
+It is also possible to have the different lentic buffers in different modes, giving a form of multi-modal editing. Switching buffers effectively switches modes as well.
+#+END_QUOTE
+
+#+BEGIN_SRC emacs-lisp
+(use-package lentic)
+#+END_SRC
+
 *** Dim inactive buffers
 #+BEGIN_SRC emacs-lisp
   (use-package dimmer
@@ -894,6 +916,23 @@ Since Emacs 24.4
             (lambda ()
               (push '("fn" . ?ƒ) prettify-symbols-alist)))
   (global-prettify-symbols-mode +1))
+#+END_SRC
+
+*** DISABLED More_Readable_Camel_Case (Glasses mode)
+~glasses-mode~ will insert a virtual underscore separator between the conjoined words, so ~fooBarBaz~ will look like ~foo_Bar_Baz~
+#+BEGIN_SRC emacs-lisp
+(glasses-mode)
+#+END_SRC
+
+*** DISABLED Auto fill comments
+#+BEGIN_SRC emacs-lisp
+(auto-fill-mode t)
+(add-hook 'prog-mode (lambda () (set (make-local-variable 'comment-auto-fill-only-comments) t)))
+#+END_SRC
+
+Maybe off:
+#+BEGIN_SRC emacs-lisp :tangle no
+(add-hook 'text-mode-hook (lambda () (auto-fill-mode -1)))
 #+END_SRC
 
 *** DISABLED Color Identifiers
@@ -1438,7 +1477,6 @@ Yasnippet:
 #+BEGIN_SRC emacs-lisp
   (use-package yasnippet-snippets
     :after yasnippet
-    :hook (python-mode . yas-minor-mode)
     :config (yas-reload-all))
 #+END_SRC
 
@@ -1948,6 +1986,20 @@ To avoid file system clutter we put all auto saved files in a single directory:
       `((".*" ,emacs-autosave-directory t)))
 #+END_SRC
 
+*** DISABLED Autosave when frame loses focus
+#+BEGIN_SRC emacs-lisp
+(use-package focus-autosave-mode
+  :diminish focus-autosave-mode
+  :config
+  (focus-autosave-mode t))
+#+END_SRC
+
+*** Save minibuffer data between sessions
+#+BEGIN_SRC emacs-lisp
+(setq savehist-file (concat user-emacs-directory "minihist"))
+(savehist-mode t)
+#+END_SRC
+
 *** Force backups
 Auto-save every 20 characters.
 If some catastrophe caused you to close Emacs or shut down your machine without saving the file then you can use =M-x= ~recover-file~ to recover the file from its auto-save:
@@ -2275,7 +2327,7 @@ Navigates back to where you were editing a file next time you open it:
 #+END_SRC
 
 ** Platform-specific
-**** MacOS
+*** MacOS
 To avoid issues with copy/pasting between other apps and Emacs set ~select-enable-clipboard~ to ~t~.
 
 ~ns-pop-up-frames~ variable determines [[https://www.gnu.org/software/emacs/manual/html_node/emacs/Mac-_002f-GNUstep-Events.html][behaviour]] of how Emacs handles opening new files (double-clicking on file in Finder for ex.) and can have these values:
@@ -2292,7 +2344,7 @@ To avoid issues with copy/pasting between other apps and Emacs set ~select-enabl
       (mac-auto-operator-composition-mode 1)))
 #+END_SRC
 
-***** Sane trackpad/mouse scroll settings
+**** Sane trackpad/mouse scroll settings
 #+BEGIN_SRC emacs-lisp
   (when (memq window-system '(mac ns))
     (setq mac-redisplay-dont-reset-vscroll t
@@ -2301,7 +2353,7 @@ To avoid issues with copy/pasting between other apps and Emacs set ~select-enabl
           mouse-wheel-progressive-speed nil)) ; don't accelerate scrolling
 #+END_SRC
 
-***** Match env-vars to shell
+**** Match env-vars to shell
 ~exec-path-from-shell~ package ensures that environment variables inside Emacs look the same as in the user's shell and particulary [[https://stackoverflow.com/a/26006290][fixes ~jedi-server~ for Python-mode]]:
 #+BEGIN_SRC emacs-lisp
   (use-package exec-path-from-shell
@@ -2309,7 +2361,7 @@ To avoid issues with copy/pasting between other apps and Emacs set ~select-enabl
     :config (exec-path-from-shell-initialize))
 #+END_SRC
 
-***** Clean and transparent title bar
+**** Clean and transparent title bar
 ~ns-appearance~ and ~ns-transparent-titlebar~ change the appearance of frame decorations on macOS 10.9+.
 Setting ~ns-appearance~ assuming dark theme (makes font in titlebar white):
 #+BEGIN_SRC emacs-lisp
@@ -2321,7 +2373,7 @@ Setting ~ns-appearance~ assuming dark theme (makes font in titlebar white):
       (setq ns-use-proxy-icon nil)))
 #+END_SRC
 
-***** Delete files to Trash Bin
+**** Delete files to Trash Bin
 Relies on ~trash~ cli-util which can be installed via ~homebrew~:
 #+BEGIN_SRC shell
 brew install trash
@@ -2338,14 +2390,14 @@ When using Homebrew, install it using \"brew install trash\"."
 		file))
 #+END_SRC
 
-***** DISABLED Use =Command key= as =Meta key=
+**** DISABLED Use =Command key= as =Meta key=
 #+BEGIN_SRC emacs-lisp
   (when (memq window-system '(mac ns))
     (setq mac-option-modifier   nil
           mac-command-modifier 'meta))
 #+END_SRC
 
-***** Swap =Control= and =Alt=
+**** Swap =Control= and =Alt=
 | Modifier | Abbrev | Key          |
 | Control  | =C=    | =Command=    |
 | Meta     | =M=    | =Option/Alt= |
@@ -2358,14 +2410,14 @@ When using Homebrew, install it using \"brew install trash\"."
               ns-control-modifier 'super))
 #+END_SRC
 
-***** DISABLED Don't send =Command key= to system
+**** DISABLED Don't send =Command key= to system
 Screws up =C-z= undo O_o
 #+BEGIN_SRC emacs-lisp
 (when (boundp 'mac-pass-command-to-system)
   (setq mac-pass-command-to-system nil))
 #+END_SRC
 
-***** DISABLED ~pdflatex~ could not be found
+**** DISABLED ~pdflatex~ could not be found
 Solution for El Capitan and Sierra. On previous systems path does varies (?)
 From [[https://tex.stackexchange.com/questions/24510/pdflatex-fails-within-emacs-app-but-works-in-terminal/24543#24543][StackExchange]]:
 #+BEGIN_SRC emacs-lisp
@@ -2376,6 +2428,12 @@ From [[https://tex.stackexchange.com/questions/24510/pdflatex-fails-within-emacs
        (setenv "PATH" (concat "/Library/TeX/texbin" ":" (getenv "PATH")))))
 
   (pdflatex-correct-path-wrapper)
+#+END_SRC
+
+*** Windows
+#+BEGIN_SRC emacs-lisp
+(if (eq system-type 'windows-nt)
+    (set-windows-env))
 #+END_SRC
 
 ** Terminal
@@ -2696,6 +2754,13 @@ Use company-childframe (posframe):
   :hook (python-mode . flycheck-mode))
 #+END_SRC
 
+*** Python snippets
+#+BEGIN_SRC emacs-lisp
+(use-package python
+  :ensure yasnippet
+  :hook (python-mode . yas-minor-mode))
+#+END_SRC
+
 *** Python debugger ~ipdb~
 IPython debugger.
 If you call ~ipdb~, the execution will stop and give a nice ipython-looking prompt. Just add the line:
@@ -2885,7 +2950,7 @@ TODO: adjust ~eshell-prompt-regexp~:
      Enter password.
      =M-x= "ein:notebooklist-open"
 
-**** integration package (Emacs IPython Notebook):
+**** DISABLED integration package (Emacs IPython Notebook):
      #+BEGIN_SRC emacs-lisp
      (use-package ein)
      #+END_SRC
@@ -3495,3 +3560,9 @@ Arrow-keys disabled since they conflict with moving heading in org.
 #+BEGIN_SRC emacs-lisp
   (custom-bindings-mode t)
 #+END_SRC
+
+
+
+
+
+
