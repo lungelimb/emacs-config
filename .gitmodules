@@ -7,3 +7,9 @@
 [submodule "backup-walker"]
 	path = straight/repos/backup-walker
 	url = https://github.com/lewang/backup-walker.git
+[submodule "elpa"]
+	path = straight/repos/elpa
+	url = https://git.savannah.gnu.org/git/emacs/elpa.git
+[submodule "keyfreq"]
+	path = straight/repos/keyfreq
+	url = https://github.com/dacap/keyfreq.git

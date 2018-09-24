@@ -5,7 +5,7 @@ gnu/bsd
 
 "26.1"
 
-#s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data ("org-elpa" ("2018-09-23 04:55:37+0300" nil (:local-repo nil :package "org-elpa" :type git)) "straight" ("2018-09-23 04:55:37+0300" ("emacs") (:type git :host github :repo "raxod502/straight.el" :files ("straight*.el") :branch "master" :package "straight" :local-repo "straight.el")) "org-plus-contrib" ("2018-08-18 13:09:50+0300" nil (:type git :repo "https://code.orgmode.org/bzg/org-mode.git" :local-repo "org" :files (:defaults "contrib/lisp/*.el") :package "org-plus-contrib")) "move-lines" ("2018-09-23 04:55:38+0300" nil (:type git :host github :repo "targzeta/move-lines" :package "move-lines" :local-repo "move-lines")) "point-im" ("2018-09-19 19:14:06+0300" ("emacs" "jabber") (:host github :repo "rayslava/emacs-point-el" :package "point-im" :type git :local-repo "emacs-point-el")) "melpa" ("2018-09-23 04:55:37+0300" nil (:type git :host github :repo "melpa/melpa" :no-build t :package "melpa" :local-repo "melpa")) "jabber" ("2018-09-19 19:14:06+0300" nil (:type git :files ("*.el" "*.texi" ("jabber-fallback-lib" "jabber-fallback-lib/hexrgb.el")) :repo "https://github.com/legoscia/emacs-jabber.git" :package "jabber" :local-repo "emacs-jabber")) "org-now" ("2018-09-18 19:38:35+0300" ("emacs" "dash") (:type git :host github :repo "alphapapa/org-now" :package "org-now" :local-repo "org-now")) "dash" ("2018-09-18 19:38:35+0300" nil (:type git :files ("dash.el") :host github :repo "magnars/dash.el" :package "dash" :local-repo "dash.el")) "backup-walker" ("2018-09-23 04:55:38+0300" nil (:type git :host github :repo "lewang/backup-walker" :package "backup-walker" :local-repo "backup-walker"))))
+#s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data ("org-elpa" ("2018-09-24 22:11:04+0300" nil (:local-repo nil :package "org-elpa" :type git)) "straight" ("2018-09-24 22:11:05+0300" ("emacs") (:type git :host github :repo "raxod502/straight.el" :files ("straight*.el") :branch "master" :package "straight" :local-repo "straight.el")) "org-plus-contrib" ("2018-08-18 13:09:50+0300" nil (:type git :repo "https://code.orgmode.org/bzg/org-mode.git" :local-repo "org" :files (:defaults "contrib/lisp/*.el") :package "org-plus-contrib")) "move-lines" ("2018-09-24 22:11:06+0300" nil (:type git :host github :repo "targzeta/move-lines" :package "move-lines" :local-repo "move-lines")) "point-im" ("2018-09-19 19:14:06+0300" ("emacs" "jabber") (:host github :repo "rayslava/emacs-point-el" :package "point-im" :type git :local-repo "emacs-point-el")) "melpa" ("2018-09-24 22:11:04+0300" nil (:type git :host github :repo "melpa/melpa" :no-build t :package "melpa" :local-repo "melpa")) "jabber" ("2018-09-19 19:14:06+0300" nil (:type git :files ("*.el" "*.texi" ("jabber-fallback-lib" "jabber-fallback-lib/hexrgb.el")) :repo "https://github.com/legoscia/emacs-jabber.git" :package "jabber" :local-repo "emacs-jabber")) "org-now" ("2018-09-18 19:38:35+0300" ("emacs" "dash") (:type git :host github :repo "alphapapa/org-now" :package "org-now" :local-repo "org-now")) "dash" ("2018-09-18 19:38:35+0300" nil (:type git :files ("dash.el") :host github :repo "magnars/dash.el" :package "dash" :local-repo "dash.el")) "backup-walker" ("2018-09-24 22:11:06+0300" nil (:type git :host github :repo "lewang/backup-walker" :package "backup-walker" :local-repo "backup-walker")) "keyfreq" ("2018-09-24 22:11:05+0300" ("cl-lib") (:type git :host github :repo "dacap/keyfreq" :package "keyfreq" :local-repo "keyfreq")) "gnu-elpa" ("2018-09-24 22:11:04+0300" nil (:type git :repo "https://git.savannah.gnu.org/git/emacs/elpa.git" :local-repo "elpa" :no-build t :package "gnu-elpa")) "cl-lib" ("2018-09-24 22:11:05+0300" nil (:files ("packages/cl-lib/*.el") :local-repo "elpa" :package "cl-lib" :type git :repo "https://git.savannah.gnu.org/git/emacs/elpa.git"))))
 
 #s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data ("straight" ((straight straight-x straight-compat straight-autoloads) (autoload (quote straight-get-recipe) "straight" "Interactively select a recipe from one of the recipe repositories.
 All recipe repositories in `straight-recipe-repositories' will
@@ -1438,10 +1438,30 @@ property is removed after refiling.
 
 with universal arg, ask for a file-name.
 
-(fn ORIGINAL-FILE)" t nil) (if (fboundp (quote register-definition-prefixes)) (register-definition-prefixes "backup-walker" (quote ("backup-walker-")))) (provide (quote backup-walker-autoloads)))))
+(fn ORIGINAL-FILE)" t nil) (if (fboundp (quote register-definition-prefixes)) (register-definition-prefixes "backup-walker" (quote ("backup-walker-")))) (provide (quote backup-walker-autoloads))) "cl-lib" ((cl-lib cl-lib-autoloads) (let ((d (file-name-directory "/Users/lungelimb/.emacs.d/straight/build/cl-lib/cl-lib-autoloads.el"))) (when (member d load-path) (setq load-path (append (remove d load-path) (list d))))) (provide (quote cl-lib-autoloads))) "keyfreq" ((keyfreq keyfreq-autoloads) (defvar keyfreq-mode nil "Non-nil if Keyfreq mode is enabled.
+See the `keyfreq-mode' command
+for a description of this minor mode.
+Setting this variable directly does not take effect;
+either customize it (see the info node `Easy Customization')
+or call the function `keyfreq-mode'.") (custom-autoload (quote keyfreq-mode) "keyfreq" nil) (autoload (quote keyfreq-mode) "keyfreq" "Keyfreq mode records number of times each command was
+called making it possible to access usage statistics through
+various keyfreq-* functions.
 
-#s(hash-table size 65 test eq rehash-size 1.5 rehash-threshold 0.8125 data (org-elpa #s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data (version 1 "org-plus-contrib" (org-plus-contrib :type git :repo "https://code.orgmode.org/bzg/org-mode.git" :local-repo "org" :files (:defaults "contrib/lisp/*.el")) "jabber" nil "dash" nil)) melpa #s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data (version 1 "jabber" (jabber :type git :files ("*.el" "*.texi" ("jabber-fallback-lib" "jabber-fallback-lib/hexrgb.el")) :repo "https://github.com/legoscia/emacs-jabber.git") "dash" (dash :type git :files ("dash.el") :host github :repo "magnars/dash.el")))))
+(fn &optional ARG)" t nil) (defvar keyfreq-autosave-mode nil "Non-nil if Keyfreq-Autosave mode is enabled.
+See the `keyfreq-autosave-mode' command
+for a description of this minor mode.
+Setting this variable directly does not take effect;
+either customize it (see the info node `Easy Customization')
+or call the function `keyfreq-autosave-mode'.") (custom-autoload (quote keyfreq-autosave-mode) "keyfreq" nil) (autoload (quote keyfreq-autosave-mode) "keyfreq" "Keyfreq Autosave mode automatically saves
+`keyfreq-table' every `keyfreq-autosave-timeout' seconds
+and when emacs is killed.
 
-("org-elpa" "melpa" "gnu-elpa" "emacsmirror" "straight" "emacs" "move-lines" "backup-walker")
+(fn &optional ARG)" t nil) (autoload (quote keyfreq-save-now) "keyfreq" "Save keyfreq data now.
+
+(fn)" t nil) (if (fboundp (quote register-definition-prefixes)) (register-definition-prefixes "keyfreq" (quote ("keyfreq-")))) (provide (quote keyfreq-autoloads)))))
+
+#s(hash-table size 65 test eq rehash-size 1.5 rehash-threshold 0.8125 data (org-elpa #s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data (version 1 "org-plus-contrib" (org-plus-contrib :type git :repo "https://code.orgmode.org/bzg/org-mode.git" :local-repo "org" :files (:defaults "contrib/lisp/*.el")) "jabber" nil "dash" nil "cl-lib" nil)) melpa #s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data (version 1 "jabber" (jabber :type git :files ("*.el" "*.texi" ("jabber-fallback-lib" "jabber-fallback-lib/hexrgb.el")) :repo "https://github.com/legoscia/emacs-jabber.git") "dash" (dash :type git :files ("dash.el") :host github :repo "magnars/dash.el") "cl-lib" nil)) gnu-elpa #s(hash-table size 65 test equal rehash-size 1.5 rehash-threshold 0.8125 data (version 1 "cl-lib" (cl-lib :type git :repo "https://git.savannah.gnu.org/git/emacs/elpa.git" :files ("packages/cl-lib/*.el") :local-repo "elpa")))))
+
+("org-elpa" "melpa" "gnu-elpa" "emacsmirror" "straight" "emacs" "keyfreq" "cl-lib" "move-lines" "backup-walker")
 
 t
