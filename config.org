@@ -259,6 +259,7 @@ Don't load old ~config.elc~ file if ~config.el~ is newer:
 (setq load-prefer-newer t)
 #+END_SRC
 
+*** TODO Bug-hunter
 ** Security
 This section is inspired by (rather old) article [[https://glyph.twistedmatrix.com/2015/11/editor-malware.html][Your Editor is Malware]].
 Futher reading is required: [[https://github.com/emacs-mirror/emacs/blob/netsec/lisp/net/nsm.el][Network Security Manager.el]]
@@ -820,6 +821,7 @@ Set ~show-paren-style~ to highlight:
 #+BEGIN_SRC emacs-lisp
 (setq show-paren-style 'parenthesis)
 (setq show-paren-delay 0)
+(setq show-paren-when-point-inside-paren t)
 (show-paren-mode 1)
 #+END_SRC
 
@@ -1011,6 +1013,17 @@ Emacs can display text written in scripts, such as Arabic, Farsi, and Hebrew, wh
 Turned off for a slight performance boost:
 #+BEGIN_SRC emacs-lisp
 (setq-default bidi-display-reordering nil)
+#+END_SRC
+
+*** Commands keyfreq statistics
+#+BEGIN_SRC emacs-lisp
+(straight-use-package
+ '(keyfreq :type git
+                 :host github
+                 :repo "dacap/keyfreq"))
+
+(keyfreq-mode t)
+(keyfreq-autosave-mode t)
 #+END_SRC
 
 *** Which key
@@ -1448,6 +1461,27 @@ Create your own modal mode.
     (ryo-modal-mode))
 #+END_SRC
 
+*** DISABLED God-mode
+#+BEGIN_SRC emacs-lisp
+(use-package god-mode
+  :init
+  (defun god-cursor ()
+    (setq cursor-type (if (or god-local-mode buffer-read-only)
+                          'box
+                        'bar)))
+
+  (add-hook 'god-mode-enabled-hook 'god-cursor)
+  (add-hook 'god-mode-disabled-hook 'god-cursor)
+  :config
+  (global-set-key (kbd "<escape>") 'god-local-mode)
+  (define-key god-local-mode-map (kbd ".") 'repeat)
+  
+  (global-set-key (kbd "C-x C-1") 'delete-other-windows)
+  (global-set-key (kbd "C-x C-2") 'split-window-below)
+  (global-set-key (kbd "C-x C-3") 'split-window-right)
+  (global-set-key (kbd "C-x C-0") 'delete-window))
+#+END_SRC
+
 ** TODO Syntax check and linting
 Flycheck:
 #+BEGIN_SRC emacs-lisp
@@ -1586,6 +1620,12 @@ First define transformer ~ivy-rich-switch-buffer-icon~ then adjust ~ivy-rich--di
 *** TODO Re-enable disabled commands
 + ~set-goal-column~ :: jumping by =C-x C-n= to same column on different lines by =C-n= and =C-p= (more info [[http://emacsblog.org/2007/03/17/quick-tip-set-goal-column/][here]])
 + ~narrow-to-region~ :: hides text outside of selected region by =C-x n n= and shows (widens) again by =C-x n w=. There's alternative [[https://github.com/Malabarba/fancy-narrow][package]] for this.
+*** TODO Synosaurus
+https://github.com/hpdeifel/synosaurus
+
+*** TODO Versor
+https://www.emacswiki.org/emacs/EmacsVersor
+
 *** Undo-tree
 By default =C-/= and =C-z= does ~undo~.
 To ~redo~ you have to ~undo~ the ~undo~ via =C-g= "safe-key" which counts as a non-undo key to signal the end of ~undo~ sequence. In other words, it reverses direction of ~undo~. [[https://stackoverflow.com/a/18383455][Thorough explanation here]].

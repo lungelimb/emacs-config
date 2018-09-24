@@ -86,6 +86,7 @@ it will be created. After this, the normal loading logic happens."
 ;; -- compiled .elc file is basically unused/unusable
 ;; -- can't :tangle /to/file either
 ;; best way to actually reload config is to somehow diff it and call eval-last-sexp upon changes
+;(require 'bug-hunter)
 (my-load-file "config")
 
 ;;; Simpler logic
