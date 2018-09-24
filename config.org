@@ -1026,6 +1026,29 @@ brew tap caskroom/fonts
 brew cask install font-fira-code font-iosevka
 #+END_SRC
 
+*** DISABLED Set preffered font if available
+just a template.
+From [[https://github.com/skeeto/.emacs.d/blob/bf7079c77618597f6a72c86586921c7e88acd1a7/init.el#L50][skeeto config]]
+#+BEGIN_SRC emacs-lisp
+(defvar my-preferred-fonts
+  '("Noto Mono-10"
+    "Inconsolata-12"))
+
+(defun my-set-preferred-font (&optional frame)
+  "Set the first available font from `my-preferred-fonts'."
+  (catch 'done
+    (with-selected-frame (or frame (selected-frame))
+      (dolist (font my-preferred-fonts)
+        (when (ignore-errors (x-list-fonts font))
+          (set-frame-font font)
+          (throw 'done nil))))))
+
+(defun my-set-frame-fullscreen (&optional frame)
+  (set-frame-parameter frame 'fullscreen 'fullheight))
+
+(add-hook 'after-make-frame-functions #'my-set-preferred-font)
+#+END_SRC
+
 *** Fixed-width
 **** DISABLED DejaVu Sans Mono
 #+BEGIN_SRC emacs-lisp
@@ -1088,6 +1111,8 @@ Use custom function to be able to cycle through themes:
         (load-theme (car (setq themes (cdr themes))) t))))
 #+END_SRC
 
+advice on ~load-theme~ when solarized customization.
+
 *** DISABLED zenburn
 #+CAPTION: Zenburn theme
 [[file:http://kippura.org/i/zenburn.png]]
@@ -1120,6 +1145,16 @@ Org fontify:
                       :underline nil :box t)
   (set-face-attribute 'org-block-end-line nil
                       :overline nil :box t))
+#+END_SRC
+
+*** DISABLED SanityInc Tomorrow Night
+#+BEGIN_SRC emacs-lisp
+(use-package color-theme-sanityinc-tomorrow
+  :config
+  (setf custom-safe-themes t)
+  (color-theme-sanityinc-tomorrow-night)
+  (custom-set-faces
+   '(cursor ((t :background "#eebb28")))))
 #+END_SRC
 
 *** DISABLED Spacemacs
@@ -1663,6 +1698,12 @@ Responsive guides allow you to visualize not only the indentation itself, but yo
 + ~'stack~ :: Like ~'top~, but also use a third color for all "ancestor" guides of the current guide. Again, this will change as the cursor moves around.
 #+BEGIN_SRC emacs-lisp
 (setq hightlight-indent-guides-responsive 'stack)
+#+END_SRC
+
+*** DISABLED Tab indents then autocomplites
+When you press =Tab= one time it will indent and if you press it again you’ll get completion candidates.
+#+BEGIN_SRC emacs-lisp
+(setq-default tab-always-indent 'complete)
 #+END_SRC
 
 *** DISABLED Drag stuff
