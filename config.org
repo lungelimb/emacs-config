@@ -2686,6 +2686,16 @@ A collection of small refactoring functions:
     :config  (js2r-add-keybindings-with-prefix "C-c C-r"))
 #+END_SRC
 
+*** Eslint
+#+BEGIN_SRC emacs-lisp
+(use-package flycheck
+  :init
+  (defun setup-js2-linter()
+    (flycheck-select-checker 'javascript-eslint)
+    (flycheck-mode))
+  :hook (js2-mode . setup-js2-linter))
+#+END_SRC
+
 *** DISABLED xref-js2
 Navigation to definitions and xref backend for JavaScript files. Relies on ~ag~ (the silver searcher).
 ~js-mode~ (which ~js2-mode~ is based on) binds =M-.= which conflicts with ~xref-js2~, so unbind it:
